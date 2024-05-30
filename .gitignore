@@ -1,0 +1,11 @@
+build/
+build
+managed_components/
+managed_components
+idf/
+idf
+idf-tools/
+idf-tools
+.vscode/
+.vscode
+.DS_Store
