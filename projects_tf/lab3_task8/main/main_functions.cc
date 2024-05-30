@@ -13,6 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include <stdio.h>
+#include "driver/gpio.h"
+
 #include "main_functions.h"
 
 #include "detection_responder.h"
@@ -55,8 +58,12 @@ constexpr int kTensorArenaSize = 81 * 1024 + scratchBufSize;
 static uint8_t *tensor_arena;//[kTensorArenaSize]; // Maybe we should move this to external
 }  // namespace
 
+#define BLINK_GPIO GPIO_NUM_4  // Define el pin que quieres usar (GPIO 2 por ejemplo)
+
 // The name of this function is important for Arduino compatibility.
 void setup() {
+  esp_rom_gpio_pad_select_gpio(BLINK_GPIO);
+  gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
   model = tflite::GetModel(g_person_detect_model_data);
@@ -161,7 +168,6 @@ void run_inference(void *ptr) {
   /* Convert from uint8 picture data to int8 */
   for (int i = 0; i < kNumCols * kNumRows; i++) {
     input->data.int8[i] = ((uint8_t *) ptr)[i] ^ 0x80;
-    // printf("%d, ", input->data.int8[i]); // Revisamos que hay dentro del buffer antes de clasificar
   }
 
 #if defined(COLLECT_CPU_STATS)
