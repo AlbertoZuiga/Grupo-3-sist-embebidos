@@ -2,7 +2,7 @@ dependencies:
   espressif/esp32-camera:
     component_hash: null
     source:
-      path: /Users/universidad/esp/projects copy/esp32-camera
+      path: /Users/universidad/esp/projects/esp32-camera
       type: local
     version: '*'
   idf:
@@ -10,6 +10,6 @@ dependencies:
     source:
       type: idf
     version: 5.3.0
-manifest_hash: b187149f43d03c85edd782e987ffbd5ec8ea6ed19fa2209a38526211f69c4429
+manifest_hash: 48aae6d2fa0e2618fbc8d0cf4f4884b7ddba5c496e605a7f30b4a3bba16058de
 target: esp32
 version: 1.0.0
