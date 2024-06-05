@@ -18,7 +18,7 @@ limitations under the License.
 #include "detection_responder.h"
 #include "image_provider.h"
 #include "model_settings.h"
-#include "person_detect_model_data.h"
+#include "digit_detect_model_data.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
@@ -59,7 +59,7 @@ static uint8_t *tensor_arena;//[kTensorArenaSize]; // Maybe we should move this 
 void setup() {
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
-  model = tflite::GetModel(g_person_detect_model_data);
+  model = tflite::GetModel(g_digit_detect_model_data);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     MicroPrintf("Model provided is schema version %d not equal to supported "
                 "version %d.", model->version(), TFLITE_SCHEMA_VERSION);
@@ -82,7 +82,9 @@ void setup() {
   //
   // tflite::AllOpsResolver resolver;
   // NOLINTNEXTLINE(runtime-global-variables)
-  static tflite::MicroMutableOpResolver<5> micro_op_resolver;
+  static tflite::MicroMutableOpResolver<7> micro_op_resolver;
+  micro_op_resolver.AddFullyConnected();
+  micro_op_resolver.AddRelu();
   micro_op_resolver.AddAveragePool2D();
   micro_op_resolver.AddConv2D();
   micro_op_resolver.AddDepthwiseConv2D();
@@ -131,16 +133,16 @@ void loop() {
   TfLiteTensor* output = interpreter->output(0);
 
   // Process the inference results.
-  int8_t person_score = output->data.uint8[kPersonIndex];
-  int8_t no_person_score = output->data.uint8[kNotAPersonIndex];
+  int8_t digit_score = output->data.uint8[kPersonIndex];
+  int8_t no_digit_score = output->data.uint8[kNotAPersonIndex];
 
-  float person_score_f =
-      (person_score - output->params.zero_point) * output->params.scale;
-  float no_person_score_f =
-      (no_person_score - output->params.zero_point) * output->params.scale;
+  float digit_score_f =
+      (digit_score - output->params.zero_point) * output->params.scale;
+  float no_digit_score_f =
+      (no_digit_score - output->params.zero_point) * output->params.scale;
 
   // Respond to detection
-  RespondToDetection(person_score_f, no_person_score_f);
+  RespondToDetection(digit_score_f, no_digit_score_f);
   vTaskDelay(1); // to avoid watchdog trigger
 }
 #endif
@@ -195,13 +197,5 @@ void run_inference(void *ptr) {
 
   TfLiteTensor* output = interpreter->output(0);
 
-  // Process the inference results.
-  int8_t person_score = output->data.uint8[kPersonIndex];
-  int8_t no_person_score = output->data.uint8[kNotAPersonIndex];
-
-  float person_score_f =
-      (person_score - output->params.zero_point) * output->params.scale;
-  float no_person_score_f =
-      (no_person_score - output->params.zero_point) * output->params.scale;
-  RespondToDetection(person_score_f, no_person_score_f);
+  RespondToDetection(output);
 }
