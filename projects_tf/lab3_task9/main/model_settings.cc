@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "model_settings.h"
 
+// Etiquetas de categoría para los dígitos del 0 al 9
 const char* kCategoryLabels[kCategoryCount] = {
-    "notperson",
-    "person",
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 };
